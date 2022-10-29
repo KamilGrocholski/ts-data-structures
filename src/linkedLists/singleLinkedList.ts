@@ -16,11 +16,12 @@ interface SingleLinkedListOperations<T> {
     updateOneAt(position: number, newData: T): T | undefined;
     updateManyWhere(data: T, newData: T): number[] | undefined;
 
-    findOneWhere(data: T): NodeNext<T> | undefined;
+    findOneWhere(data: T): { node: NodeNext<T>, position: number } | undefined;
     findOneAt(position: number): NodeNext<T> | undefined;
 
     removeOneWhere(data: T): NodeNext<T> | undefined;
-
+    removeOneAt(position: number): NodeNext<T> | undefined;
+    
     findTail(): NodeNext<T> | undefined;
 
     traverse(callback: (node: NodeNext<T> | null) => void): void;
@@ -56,10 +57,27 @@ export class SingleLinkedList<T> extends BaseLinkedList<T> implements SingleLink
         }
     }
 
+    // TODO testowanie tego loopa do uzywania w innych
+    // private _loop(callback: (node: NodeNext<T>, position: number, stopWork: () => void) => void): NodeNext<T> | undefined {
+    //     let current = this.head
+    //     let work = true
+    //     let n = 0
+    //     while (current) {
+    //         callback(current, n, () => {
+    //             work = false
+    //         })
+    //         if (!work) break
+    //         n++
+    //         current = current.next
+    //     }
+
+    //     return current ?? undefined
+    // }
+
     findTail(): NodeNext<T> | undefined {
         if (!this.head) return 
         let temp = this.head
-        while (temp != null) {
+        while (temp !== null) {
             if (!temp.next) {
                 return temp
             } else {
@@ -74,7 +92,7 @@ export class SingleLinkedList<T> extends BaseLinkedList<T> implements SingleLink
      */
     traverse(callback?: (node: NodeNext<T> | null) => void): void {
         let temp = this.head
-        while (temp != null) {
+        while (temp !== null) {
             callback && callback(temp)
             temp = temp.next
         }
@@ -110,7 +128,7 @@ export class SingleLinkedList<T> extends BaseLinkedList<T> implements SingleLink
         if (!this.head) {
             return 
         } else {
-            const found = this.findOneWhere(data)
+            const found = this.findOneWhere(data)?.node
             if (!found) return 
             const newNode = this._createOneNode(newNodeData)
             newNode.next = found.next
@@ -120,7 +138,7 @@ export class SingleLinkedList<T> extends BaseLinkedList<T> implements SingleLink
     }
 
     embedOneAt(position: number, newNodeData: T): void {
-        if (!this.head || position > this.length) {
+        if (!this.head || position >= this.length) {
             return 
         } else {
             const found = this.findOneAt(position)
@@ -136,7 +154,7 @@ export class SingleLinkedList<T> extends BaseLinkedList<T> implements SingleLink
         if (!this.head) {
             return 
         } else {
-            const found = this.findOneWhere(data)
+            const found = this.findOneWhere(data)?.node
             if (!found) return
             const newLinkedNodes = this._createManyLinkedNodes(newNodesData)
             newLinkedNodes.subTail.next = found.next
@@ -146,7 +164,7 @@ export class SingleLinkedList<T> extends BaseLinkedList<T> implements SingleLink
     }
     
     embedManyAt(position: number, newNodesData: T[]): void {
-        if (!this.head || position > this.length) {
+        if (!this.head || position >= this.length) {
             return 
         } else {
             const found = this.findOneAt(position)
@@ -199,7 +217,7 @@ export class SingleLinkedList<T> extends BaseLinkedList<T> implements SingleLink
         if (!this.head) return 
         let temp = this.head
         let n = 0
-        while (temp != null) {
+        while (temp !== null) {
             if (this.comparator(temp.data, data)) {
                 temp.data = newData
                 return n
@@ -221,10 +239,10 @@ export class SingleLinkedList<T> extends BaseLinkedList<T> implements SingleLink
      */
     updateOneAt(position: number, newData: T): T | undefined {
         if (!this.head) return
-        if (position > length) return  
+        if (position >= this.length) return  
         let temp = this.head
         const n = 0
-        while (temp != null) {
+        while (temp !== null) {
             if (n === position) {
                 temp.data = newData
             } else {
@@ -261,26 +279,34 @@ export class SingleLinkedList<T> extends BaseLinkedList<T> implements SingleLink
      * Returns the first `node` that meets the term or `undefined` when not found
      * @param data 
      */
-    findOneWhere(data: T): NodeNext<T> | undefined {
+    findOneWhere(data: T): { node: NodeNext<T>, position: number } | undefined {
         if (!this.head) return 
         let temp = this.head
-        while (temp != null) {
+        let n = 0
+        while (temp !== null) {
+            console.log(n, temp)
             if (this.comparator(temp.data, data)) {
-                return temp
+                return {
+                    node: temp,
+                    position: n
+                }
             } else {
                 if(temp.next) {
                     temp = temp.next
+                } else {
+                    break
                 }
             } 
+            n++
         }
+        return 
     }
 
     findOneAt(position: number): NodeNext<T> | undefined {
-        if (!this.head) return 
-        if (position > length) return 
+        if (!this.head || position >= this.length) return 
         let temp = this.head
         let n = 0
-        while (temp.next != null) {
+        while (temp.next !== null) {
             if (n === position) { 
                 return temp
             } else {
@@ -288,6 +314,7 @@ export class SingleLinkedList<T> extends BaseLinkedList<T> implements SingleLink
                 n++
             } 
         }
+        return
     }
 
     //TODO tak nie może tak być
@@ -295,10 +322,11 @@ export class SingleLinkedList<T> extends BaseLinkedList<T> implements SingleLink
         if (!this.head) return
         let prev: NodeNext<T> | undefined
         let current = this.head
-        while (current != null) {
+        while (current !== null) {
             if (this.comparator(current.data, data)) {
                 if (prev) {
                     prev.next = current.next
+                    this.length--
                     return current
                 } else {
                     throw new Error('During `removeOneWhere`: no `prev` value')
@@ -311,4 +339,27 @@ export class SingleLinkedList<T> extends BaseLinkedList<T> implements SingleLink
         }
         return
     }
+
+    removeOneAt(position: number): NodeNext<T> | undefined {
+        if (!this.head || position >= this.length) return
+        let n = 0
+        let current = this.head
+        let prev: NodeNext<T> | undefined
+        while (current !== null) {
+            if (position === n) {
+                if (prev) {
+                    prev.next = current.next
+                    this.length--
+                    return current
+                } 
+            }
+            if (current.next) {
+                prev = current
+                current = current.next
+                n++
+            }
+        }
+        return 
+    }
 }
+

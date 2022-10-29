@@ -25,17 +25,18 @@ export class NodePrevNext<T> extends NodeBase<T> {
     public next: NodePrevNext<T> | null = null
     public prev: NodePrevNext<T> | null = null
 
+    
     constructor(data: T) {
         super(data)
     }
+    
+    static createNode = <W>(data: W) => new NodePrevNext(data)
 }
 
 export abstract class BaseLinkedList<T> {
-    private _defaultComparator: Comparator<T> = (d1: T, d2: T) => d1 === d2
-
-    protected comparator: Comparator<T>
-
     public length = 0
+    private _defaultComparator: Comparator<T> = (d1: T, d2: T) => d1 === d2
+    public comparator: Comparator<T>
 
     constructor(config: Config<T>) {
         this.comparator = config.comparator ?? this._defaultComparator
