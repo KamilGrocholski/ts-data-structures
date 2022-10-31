@@ -1,44 +1,88 @@
-export type Comparator<T> = (d1: T, d2: T) => boolean;
+import { NonEmptyArray, Comparator} from "../utils/types";
 
 export interface Config<T> {
     comparator?: Comparator<T>
 }
 
-abstract class NodeBase<T> {
+export type Pointer = 'NEXT' | 'PREV'
+export type Edge = 'HEAD' | 'TAIL'
+export type FoundNodeSingle<T> = { node: NodeSingle<T>, position: number }
+export type FoundNodeDouble<T> = { node: NodeDouble<T>, position: number }
+
+export class NodeSingle<T> {
     public data: T
+    public next: NodeSingle<T> | null = null
 
     constructor(data: T) {
         this.data = data
     }
-}
 
-export class NodeNext<T> extends NodeBase<T> {
-    public next: NodeNext<T> | null = null
+    static createOne = <D>(data: D) => new NodeSingle(data)
+    static createChain = <D>(data: NonEmptyArray<D>) => {
+        const length = data.length
+        const chainHead = new NodeSingle<D>(data[0])
+        let current = chainHead
 
-    constructor(data: T) {
-        super(data)
+        for (let d = 1; d < length; d++) {
+            const next = new NodeSingle<D>(data[d])
+            current.next = next
+            current = current.next
+        }
 
+        return {
+            chainHead,
+            chainTail: current
+        }
     }
 }
 
-export class NodePrevNext<T> extends NodeBase<T> {
-    public next: NodePrevNext<T> | null = null
-    public prev: NodePrevNext<T> | null = null
+export class NodeDouble<T> {
+    public data: T
+    public next: NodeDouble<T> | null = null
+    public prev: NodeDouble<T> | null = null
 
-    
     constructor(data: T) {
-        super(data)
+        this.data = data
     }
-    
-    static createNode = <W>(data: W) => new NodePrevNext(data)
+
+    static createOne = <D>(data: D) => new NodeDouble(data)
+    static createChain = <D>(data: NonEmptyArray<D>) => {
+        const length = data.length
+        const chainHead = new NodeDouble<D>(data[0])
+
+        if (data[1]) {
+            let current = new NodeDouble<D>(data[1])
+            chainHead.next = current
+            current.prev = chainHead
+            
+            for (let d = 2; d < length; d++) {
+                const newNode = new NodeDouble(data[d]) as NodeDouble<D>
+                current.next = newNode
+                newNode.prev = current
+
+                current = current.next
+            }
+            
+            return {
+                chainHead,
+                chainTail: current
+            }
+        } else {
+            
+            return {
+                chainHead,
+                chainTail: chainHead
+            }
+        }
+    }
 }
 
 export abstract class BaseLinkedList<T> {
-    public length = 0
+    public size = 0
     private _defaultComparator: Comparator<T> = (d1: T, d2: T) => d1 === d2
-    public comparator: Comparator<T>
+    public compare: Comparator<T>
 
     constructor(config: Config<T>) {
-        this.comparator = config.comparator ?? this._defaultComparator
+        this.compare = config.comparator ?? this._defaultComparator
     }
 }
