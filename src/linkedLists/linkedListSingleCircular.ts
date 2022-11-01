@@ -6,12 +6,25 @@ interface LinkedListSingleCircularOperations<T> {
     appendOne(data: T): void
     appendMany(data: NonEmptyArray<T>): void
     
+    embedAfterPosition(position: number, data: T): void
+    embedManyAfterPosition(position: number, data: NonEmptyArray<T>): void
+    embedAfterGiven(node: NodeSingle<T>, data: T): number | undefined
+    embedManyAfterGiven(node: NodeSingle<T>, data: NonEmptyArray<T>): void
+
     prependOne(data: T): void
     prependMany(data: NonEmptyArray<T>): void
 
+    findOne(data: T, startFrom: Edge): FoundNodeSingle<T> | undefined
+    findMany(data: T): FoundNodeSingle<T>[] | undefined
+    findAt(position: T): NodeSingle<T> | undefined
+
     removeHead(): T | undefined
     removeTail(): T | undefined
-    // removeAt(position: number): T | undefined
+    removeGiven(node: NodeSingle<T>): number | undefined
+    removeAt(position: number): T | undefined
+
+    updateOne(data: T, newData: T, startFrom: Edge): number | undefined 
+    updateMany(data: T, newData: T): number[] | undefined
 
     some(callback: (currentNode: NodeSingle<T>, currentPosition: number, previousNode: NodeSingle<T> | null) => boolean | void, startFrom: Edge): FoundNodeSingle<T> | undefined
     forEach(callback: (currentNode: NodeSingle<T>, currentPosition: number, previousNode: NodeSingle<T> | null) => void): void
@@ -34,7 +47,7 @@ export class LinkedListSingleCircular<T> extends BaseLinkedList<T> implements Li
         return position < (this.size / 2) ? 'HEAD' : 'TAIL'
     }
 
-    //TODO dodać startFrom z wybranego `node`
+    //TODO dodać startFrom z wybranego `node` i `direction`
     some(callback: (currentNode: NodeSingle<T>, currentPosition: number, previousNode: NodeSingle<T> | null) => boolean | void, startFrom: Edge = 'HEAD'): FoundNodeSingle<T> | undefined {
         if (this.size === 0) return 
 
@@ -45,6 +58,28 @@ export class LinkedListSingleCircular<T> extends BaseLinkedList<T> implements Li
             let found: NodeSingle<T> | undefined = undefined
 
             while (curr && n < this.size) {
+                const is = callback(curr, n, prev)
+
+                if (is) {
+                    found = curr
+                    break
+                }
+
+                prev = curr
+                curr = curr.next
+                n++
+            }
+
+            return found ? { node: found, position: n } : undefined
+        }
+        
+        if (startFrom === 'TAIL') {
+            let prev: NodeSingle<T> | null = null
+            let curr = this.tail
+            let n = this.size - 1
+            let found: NodeSingle<T> | undefined = undefined
+
+            while (curr && curr.next == this.tail) {
                 const is = callback(curr, n, prev)
 
                 if (is) {
@@ -108,6 +143,74 @@ export class LinkedListSingleCircular<T> extends BaseLinkedList<T> implements Li
         this.tail = chainTail
     }
 
+    embedAfterPosition(position: number, data: T): void {
+        if (this.size === 0) return 
+
+        if (position >= this.size) return
+
+        const newNode = NodeSingle.createOne(data)
+
+        this.some((curr, n) => {
+            if(n === position) {
+                this.size++
+                newNode.next = curr.next
+                curr.next = newNode
+
+                return true
+            }
+        })
+    }
+
+    embedManyAfterPosition(position: number, data: NonEmptyArray<T>): void {
+        if (this.size === 0) return 
+
+        if (position >= this.size) return
+
+        const { chainHead, chainTail } = NodeSingle.createChain(data)
+
+        this.some((curr, n) => {
+            if(n === position) {
+                this.size += data.length
+                chainTail.next = curr.next
+                curr.next = chainHead
+
+                return true
+            }
+        })
+    }
+
+    embedAfterGiven(node: NodeSingle<T>, data: T): number | undefined {
+        if (this.size === 0) return 
+
+        const newNode = NodeSingle.createOne(data)
+
+        return this.some(curr => {
+            if (curr == node) {
+                this.size++
+                newNode.next = curr.next
+                curr.next = newNode
+
+                return true
+            }
+        })?.position
+    }
+
+    embedManyAfterGiven(node: NodeSingle<T>, data: NonEmptyArray<T>): void {
+        if (this.size === 0) return 
+
+        const { chainHead, chainTail } = NodeSingle.createChain(data)
+
+        this.some(curr => {
+            if (curr == node) {
+                this.size += data.length
+                chainTail.next = curr.next
+                curr.next = chainHead
+
+                return true
+            }
+        })
+    }
+
     prependOne(data: T): void {
         const newNode = NodeSingle.createOne(data)
         this.size++
@@ -138,6 +241,29 @@ export class LinkedListSingleCircular<T> extends BaseLinkedList<T> implements Li
         this.head = chainHead
     }
 
+    findOne(data: T, startFrom: Edge = 'HEAD'): FoundNodeSingle<T> | undefined {
+        return this.some(curr => this.compare(curr.data, data), startFrom)
+    }
+
+    findMany(data: T): FoundNodeSingle<T>[] | undefined {
+        const foundNodes: FoundNodeSingle<T>[] = []
+
+        this.forEach((curr, n) => {
+            if (this.compare(curr.data, data)) {
+                foundNodes.push({
+                    node: curr,
+                    position: n
+                })
+            }
+        })
+
+        return foundNodes.length > 0 ? foundNodes : undefined
+    }
+
+    findAt(position: T): NodeSingle<T> | undefined {
+        return this.some((curr, n) => n === position)?.node
+    }
+
     removeHead(): T | undefined {
         if (!this.head) return 
         
@@ -151,14 +277,91 @@ export class LinkedListSingleCircular<T> extends BaseLinkedList<T> implements Li
     }
 
     removeTail(): T | undefined {
+        if (!this.head) return
+
+        if (this.size === 1) {
+            const tailData = this.tail?.data
+            this.clear()
+            
+            return tailData
+        }
+        
+        this.some((curr, n, prev) => {
+            if (prev?.next == this.tail) {
+                this.size--
+                (prev as NodeSingle<T>).next = this.head
+                this.tail = prev
+
+                return true
+            }
+        })?.node.next?.data
+    }
+
+    removeGiven(node: NodeSingle<T>): number | undefined {
         if (!this.tail) return 
+        
+        
+        if (node == this.head) {
+            this.removeHead()
 
-        const tailData = this.tail.data
-        this.size--
+            return 
+        }
+        
+        if (node == this.tail) {
+            this.removeTail()
 
-        this.tail 
+            return
+        }
+        
+        this.some((curr, n, prev) => {
+            if (curr == node) {
+                this.size--
+                (prev as NodeSingle<T>).next = curr.next
 
-        return tailData
+                return true
+            }
+        })
+    }
+
+    removeAt(position: number): T | undefined {
+        if (this.size === 0) return 
+
+        if (position === 0) {
+            this.removeHead()
+
+            return
+        }
+
+        if (position === this.size - 1) {
+            this.removeTail()
+
+            return
+        }
+
+        this.some((curr, n, prev) => {
+            if (position === n) {
+                (prev as NodeSingle<T>).next = curr.next
+
+                return true
+            }
+        }, this._closerTo(position))
+    }
+
+    updateOne(data: T, newData: T, startFrom: Edge = 'HEAD'): number | undefined {
+        return this.some(curr => this.compare(curr.data, newData), startFrom)?.position
+    }
+
+    updateMany(data: T, newData: T): number[] | undefined {
+        const updatedPositions: number[] = []
+
+        this.forEach((curr, n) => {
+            if (this.compare(curr.data, data)) {
+                curr.data = newData
+                updatedPositions.push(n)
+            }
+        })
+
+        return updatedPositions.length > 0 ? updatedPositions : undefined
     }
 
     toArray(): T[] {

@@ -1,6 +1,13 @@
 import { NonEmptyArray, Comparator} from "../utils/types";
 
 export interface Config<T> {
+    /**
+     * A function to compare other values than the primitives,
+     * on default the comparison is made with `===` 
+     * @param data1 `T`
+     * @param data2 `T`
+     * @returns `boolean`
+     */
     comparator?: Comparator<T>
 }
 

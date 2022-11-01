@@ -4,13 +4,12 @@ import { BaseLinkedList, Config, NodeDouble, FoundNodeDouble, Edge } from "./bas
 interface LinkedListDoubleOperations<T> {
     appendOne(data: T): void
     appendMany(data: NonEmptyArray<T>): void
-    appendGiven(node: NodeDouble<T>): void
 
     prependOne(data: T): void
     prependMany(data: NonEmptyArray<T>): void
-    prependGiven(node: NodeDouble<T>): void
 
     findOne(data: T, startFrom: Edge): FoundNodeDouble<T> | undefined
+    findMany(data: T): FoundNodeDouble<T>[] | undefined
     findAt(position: number): NodeDouble<T> | undefined
 
     removeHead(): T | undefined
@@ -130,20 +129,6 @@ export class LinkedListDouble<T> extends BaseLinkedList<T> implements LinkedList
         this.tail = chainTail
     }
 
-    appendGiven(node: NodeDouble<T>): void {
-        this.size++
-
-        if (!this.tail) {
-            this.head = this.tail = node
-
-            return 
-        }
-
-        this.tail.next = node
-        node.prev = this.tail
-        this.tail = node
-    }
-
     prependOne(data: T): void {
         const newNode = NodeDouble.createOne(data)
         this.size++
@@ -173,20 +158,6 @@ export class LinkedListDouble<T> extends BaseLinkedList<T> implements LinkedList
         this.head.prev = chainTail
         chainTail.next = this.head
         this.head = chainHead
-    }
-
-    prependGiven(node: NodeDouble<T>): void {
-        this.size++
-
-        if (!this.head) {
-            this.head = this.tail = node
-
-            return 
-        }
-
-        this.head.prev = node
-        node.next = this.head
-        this.head = node
     }
 
     removeTail(): T | undefined {
@@ -250,6 +221,21 @@ export class LinkedListDouble<T> extends BaseLinkedList<T> implements LinkedList
 
     findOne(data: T, startFrom: Edge = 'HEAD'): FoundNodeDouble<T> | undefined {
         return this.some(curr => this.compare(curr.data, data), startFrom)
+    }
+    
+    findMany(data: T): FoundNodeDouble<T>[] | undefined {
+        const foundNodes: FoundNodeDouble<T>[] = []
+
+        this.forEach((curr, n) => {
+            if (this.compare(curr.data, data)) {
+                foundNodes.push({
+                    node: curr,
+                    position: n
+                })
+            }
+        })
+
+        return foundNodes
     }
 
     findAt(position: number): NodeDouble<T> | undefined {

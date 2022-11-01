@@ -1,15 +1,17 @@
-import { LinkedListDouble, LinkedListSingle, LinkedListSingleCircular } from "./linkedLists"
-import { QueueDynamic, QueueFixed } from "./queues"
-import { StackDynamic, StackFixed } from "./stacks"
+import { LinkedListSingle, LinkedListSingleCircular } from "./linkedLists"
+
 
 export const app = () => {
-    const q1 = new LinkedListSingleCircular<number>()
+    const l1 = new LinkedListSingle<number>()
 
-    q1.appendMany([1,2,3])
-    q1.prependMany([0,-1,-2])
-    q1.clear()
-    const w  = q1.toArray()
-    q1.removeHead()
-    console.log(w)
+    l1.appendOne(1)
+    l1.appendOne(2)
+    l1.appendOne(3)
+
+
+    l1.removeTail()
+
+    console.log(l1.toArray())
 }
+
 app()

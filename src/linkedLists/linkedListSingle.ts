@@ -4,16 +4,21 @@ import { BaseLinkedList, Config, FoundNodeSingle, NodeSingle } from "./base"
 interface LinkedListSingleOperations<T> {
     appendOne(data: T): void
     appendMany(data: NonEmptyArray<T>): void
-    appendGiven(node: NodeSingle<T>): void
+
+    embedAfterPosition(position: number, data: T): void
+    embedManyAfterPosition(position: number, data: NonEmptyArray<T>): void
+    embedAfterGiven(node: NodeSingle<T>, data: T): void
+    embedManyAfterGiven(node: NodeSingle<T>, data: NonEmptyArray<T>): void
 
     prependOne(data: T): void
     prependMany(data: NonEmptyArray<T>): void
-    prependGiven(node: NodeSingle<T>): void
 
     findOne(data: T): FoundNodeSingle<T> | undefined
+    findMany(data: T): FoundNodeSingle<T>[] | undefined
     findAt(position: number): NodeSingle<T> | undefined
 
     removeHead(): T | undefined
+    removeTail(): T | undefined
     removeAt(position: number): T | undefined
     removeGiven(node: NodeSingle<T>): void
 
@@ -100,21 +105,82 @@ export class LinkedListSingle<T> extends BaseLinkedList<T> implements LinkedList
         this.tail = chainHead
     }
 
-    appendGiven(node: NodeSingle<T>): void {
-        if (!this.tail) {
-            this.head = this.tail = node
-        }
-        
-        node.next = this.head
-        this.head = node
+    embedAfterPosition(position: number, data: T): void {
+        if (this.size === 0) return 
 
-        let chainSize = 0
-        while (node) {
-            chainSize++
-            (node as NodeSingle<T> | null) = node.next
+        if (position >= this.size) return
+
+        const newNode = NodeSingle.createOne(data)
+
+        this.some((curr, n) => {
+            if (n === position) { 
+                newNode.next = curr.next
+                curr.next = newNode
+                
+                if (this.size - 1 === n) {
+                    this.tail = newNode
+                }
+
+                this.size++
+
+                return true 
+            }
+        })
+    }
+
+    embedManyAfterPosition(position: number, data: NonEmptyArray<T>): void {
+        if (this.size === 0) return 
+
+        if (position >= this.size) return
+
+        const { chainHead, chainTail } = NodeSingle.createChain(data)
+
+        this.some((curr, n) => {
+            if (n === position) {
+                chainTail.next = curr.next
+                curr.next = chainHead
+                
+                if (this.size - 1 === n) {
+                    this.tail = chainTail
+                }
+                
+                this.size += data.length
+
+                return true
+            }
+        })
+    }
+
+    embedAfterGiven(node: NodeSingle<T>, data: T): void {
+        if (this.size === 0) return 
+
+        this.size++
+        const newNode = NodeSingle.createOne(data)
+
+        newNode.next = node.next
+        node.next = newNode
+
+        if (this.tail == node.next) {
+            this.tail = newNode
+
+            return
+        }
+    }
+
+    embedManyAfterGiven(node: NodeSingle<T>, data: NonEmptyArray<T>): void {
+        if (this.size === 0) return 
+
+        if (this.tail == node) {
+            this.appendMany(data)
+
+            return 
         }
 
-        this.size += chainSize
+        this.size += data.length
+        const { chainHead, chainTail } = NodeSingle.createChain(data)
+
+        chainTail.next = node.next
+        node.next = chainHead
     }
 
     prependOne(data: T): void {
@@ -145,21 +211,23 @@ export class LinkedListSingle<T> extends BaseLinkedList<T> implements LinkedList
         this.head = chainHead
     }
 
-    prependGiven(node: NodeSingle<T>): void {
-        this.size++
-
-        if (!this.head) {
-            this.head = this.tail = node
-
-            return 
-        }
-
-        node.next = this.head
-        this.head = node
-    }
-
     findOne(data: T): FoundNodeSingle<T> | undefined {
         return this.some((node) => this.compare(node.data, data))
+    }
+
+    findMany(data: T): FoundNodeSingle<T>[] | undefined {
+        const foundNodes: FoundNodeSingle<T>[] = []
+
+        this.forEach((curr, n) => {
+            if (this.compare(curr.data, data)) {
+                foundNodes.push({
+                    node: curr,
+                    position: n
+                })
+            }
+        })
+
+        return foundNodes.length > 0 ? foundNodes : undefined
     }
 
     findAt(position: number): NodeSingle<T> | undefined {
@@ -231,6 +299,28 @@ export class LinkedListSingle<T> extends BaseLinkedList<T> implements LinkedList
 
             return
         })
+    }
+
+    removeTail(): T | undefined {
+        if (!this.tail) return 
+
+        const tailData = this.tail.data
+
+        if (this.size === 1) {
+            this.clear()
+            
+            return tailData
+        }
+
+        return this.some((curr, n) => {
+            if (n === this.size - 2) {
+                this.size--
+                curr.next = null
+                this.tail = curr
+
+                return true
+            }
+        })?.node.data
     }
 
     toArray(): T[] {
