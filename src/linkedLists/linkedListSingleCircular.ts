@@ -1,6 +1,6 @@
 import { inspect } from 'util'
 import { NonEmptyArray } from '../utils/types';
-import { BaseLinkedList, Config, Edge, FoundNodeSingle, NodeSingle } from "./base";
+import { BaseLinkedList, Config, FoundNodeSingle, NodeSingle } from "./base";
 
 interface LinkedListSingleCircularOperations<T> {
     appendOne(data: T): void
@@ -14,7 +14,7 @@ interface LinkedListSingleCircularOperations<T> {
     prependOne(data: T): void
     prependMany(data: NonEmptyArray<T>): void
 
-    findOne(data: T, startFrom: Edge): FoundNodeSingle<T> | undefined
+    findOne(data: T): FoundNodeSingle<T> | undefined
     findMany(data: T): FoundNodeSingle<T>[] | undefined
     findAt(position: T): NodeSingle<T> | undefined
 
@@ -23,10 +23,10 @@ interface LinkedListSingleCircularOperations<T> {
     removeGiven(node: NodeSingle<T>): number | undefined
     removeAt(position: number): T | undefined
 
-    updateOne(data: T, newData: T, startFrom: Edge): number | undefined 
+    updateOne(data: T, newData: T): number | undefined 
     updateMany(data: T, newData: T): number[] | undefined
 
-    some(callback: (currentNode: NodeSingle<T>, currentPosition: number, previousNode: NodeSingle<T> | null) => boolean | void, startFrom: Edge): FoundNodeSingle<T> | undefined
+    some(callback: (currentNode: NodeSingle<T>, currentPosition: number, previousNode: NodeSingle<T> | null) => boolean | void): FoundNodeSingle<T> | undefined
     forEach(callback: (currentNode: NodeSingle<T>, currentPosition: number, previousNode: NodeSingle<T> | null) => void): void
 
     toArray(): T[]
@@ -43,57 +43,28 @@ export class LinkedListSingleCircular<T> extends BaseLinkedList<T> implements Li
         super(config)
     }
 
-    private _closerTo(position: number): Edge {
-        return position < (this.size / 2) ? 'HEAD' : 'TAIL'
-    }
-
-    //TODO dodać startFrom z wybranego `node` i `direction`
-    some(callback: (currentNode: NodeSingle<T>, currentPosition: number, previousNode: NodeSingle<T> | null) => boolean | void, startFrom: Edge = 'HEAD'): FoundNodeSingle<T> | undefined {
+    some(callback: (currentNode: NodeSingle<T>, currentPosition: number, previousNode: NodeSingle<T> | null) => boolean | void): FoundNodeSingle<T> | undefined {
         if (this.size === 0) return 
 
-        if (startFrom === 'HEAD') {
-            let prev: NodeSingle<T> | null = null
-            let curr = this.head
-            let n = 0
-            let found: NodeSingle<T> | undefined = undefined
+        let prev: NodeSingle<T> | null = null
+        let curr = this.head
+        let n = 0
+        let found: NodeSingle<T> | undefined = undefined
 
-            while (curr && n < this.size) {
-                const is = callback(curr, n, prev)
+        while (curr && n < this.size) {
+            const is = callback(curr, n, prev)
 
-                if (is) {
-                    found = curr
-                    break
-                }
-
-                prev = curr
-                curr = curr.next
-                n++
+            if (is) {
+                found = curr
+                break
             }
 
-            return found ? { node: found, position: n } : undefined
+            prev = curr
+            curr = curr.next
+            n++
         }
-        
-        if (startFrom === 'TAIL') {
-            let prev: NodeSingle<T> | null = null
-            let curr = this.tail
-            let n = this.size - 1
-            let found: NodeSingle<T> | undefined = undefined
 
-            while (curr && curr.next == this.tail) {
-                const is = callback(curr, n, prev)
-
-                if (is) {
-                    found = curr
-                    break
-                }
-
-                prev = curr
-                curr = curr.next
-                n++
-            }
-
-            return found ? { node: found, position: n } : undefined
-        }
+        return found ? { node: found, position: n } : undefined
     }
 
     forEach(callback: (currentNode: NodeSingle<T>, currentPosition: number, previousNode: NodeSingle<T> | null) => void): void {
@@ -241,8 +212,8 @@ export class LinkedListSingleCircular<T> extends BaseLinkedList<T> implements Li
         this.head = chainHead
     }
 
-    findOne(data: T, startFrom: Edge = 'HEAD'): FoundNodeSingle<T> | undefined {
-        return this.some(curr => this.compare(curr.data, data), startFrom)
+    findOne(data: T): FoundNodeSingle<T> | undefined {
+        return this.some(curr => this.compare(curr.data, data))
     }
 
     findMany(data: T): FoundNodeSingle<T>[] | undefined {
@@ -344,11 +315,11 @@ export class LinkedListSingleCircular<T> extends BaseLinkedList<T> implements Li
 
                 return true
             }
-        }, this._closerTo(position))
+        })
     }
 
-    updateOne(data: T, newData: T, startFrom: Edge = 'HEAD'): number | undefined {
-        return this.some(curr => this.compare(curr.data, newData), startFrom)?.position
+    updateOne(data: T, newData: T,): number | undefined {
+        return this.some(curr => this.compare(curr.data, newData))?.position
     }
 
     updateMany(data: T, newData: T): number[] | undefined {
