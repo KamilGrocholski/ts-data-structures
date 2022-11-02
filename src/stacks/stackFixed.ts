@@ -4,6 +4,8 @@ interface StackFixedOperations<T> {
     peek(): T | undefined
     isEmpty(): boolean
     isFull(): boolean
+    from(data: T[]): void
+    toArray(): T[]
     clear(): void
 }
 
@@ -43,6 +45,23 @@ export class StackFixed<T> implements StackFixedOperations<T> {
 
     isFull(): boolean {
         return this.size === this.capacity
+    }
+
+    from(data: T[]): void {
+        if (data.length > this.capacity) throw new Error()
+
+        this._storage = data
+        this.size = data.length
+    }
+
+    toArray(): T[] {
+        const dataArr = new Array(this.size)
+
+        for (let i = 0; i < this.size; i++) {
+            dataArr[i] = this._storage[i]
+        }
+
+        return dataArr
     }
 
     clear(): void {

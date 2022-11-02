@@ -31,6 +31,8 @@ interface LinkedListSingleOperations<T> {
     toArray(): T[]
     toJSON(): string
     
+    from(data: NonEmptyArray<T>): void
+
     clear(): void
 }
 
@@ -333,6 +335,15 @@ export class LinkedListSingle<T> extends BaseLinkedList<T> implements LinkedList
     
     toJSON(): string {
         return JSON.stringify(this.head)
+    }
+
+    from(data: NonEmptyArray<T>): void {
+        const { chainHead, chainTail } = NodeSingle.createChain(data)
+
+        this.size = data.length
+        
+        this.head = chainHead
+        this.tail = chainTail
     }
 
     clear(): void {

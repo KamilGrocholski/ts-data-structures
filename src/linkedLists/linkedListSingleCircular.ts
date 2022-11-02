@@ -32,6 +32,8 @@ interface LinkedListSingleCircularOperations<T> {
     toArray(): T[]
     toJSON(): string
 
+    from(data: NonEmptyArray<T>): void
+
     clear(): void
 }
 
@@ -345,6 +347,19 @@ export class LinkedListSingleCircular<T> extends BaseLinkedList<T> implements Li
 
     toJSON(): string {
         return inspect(this.head)
+    }
+
+    from(data: NonEmptyArray<T>): void {
+        const { chainHead, chainTail } = NodeSingle.createChain(data)
+
+        this.size = data.length
+
+        if (this.size > 1) {
+            chainTail.next = chainHead
+        }
+
+        this.head = chainHead
+        this.tail = chainTail
     }
 
     clear(): void {

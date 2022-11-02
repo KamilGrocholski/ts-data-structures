@@ -5,6 +5,11 @@ interface LinkedListDoubleOperations<T> {
     appendOne(data: T): void
     appendMany(data: NonEmptyArray<T>): void
 
+    embedAfterPosition(position: number, data: T): void
+    embedManyAfterPosition(position: number, data: NonEmptyArray<T>): void
+    // embedAfterGiven(node: NodeDouble<T>, data: T): void
+    // embedManyAfterGiven(node: NodeDouble<T>, data: NonEmptyArray<T>): void
+
     prependOne(data: T): void
     prependMany(data: NonEmptyArray<T>): void
 
@@ -26,6 +31,8 @@ interface LinkedListDoubleOperations<T> {
     toArray(): T[]
     toJSON(): string
     
+    from(data: NonEmptyArray<T>): void
+
     clear(): void
 }
 
@@ -127,6 +134,57 @@ export class LinkedListDouble<T> extends BaseLinkedList<T> implements LinkedList
 
         this.tail.next = chainHead
         this.tail = chainTail
+    }
+
+    embedAfterPosition(position: number, data: T): void {
+        if (this.size === 0 || position >= this.size) return 
+
+        if (this.size === 1 || position === this.size - 1) {
+            this.appendOne(data)
+
+            return 
+        }
+
+        this.size++
+        const newNode = NodeDouble.createOne(data)
+
+        this.some((curr, n) => {
+            if (n === position) {
+                newNode.next = curr.next
+                newNode.prev = curr
+                if (curr.next?.prev) {
+                    curr.next.prev = newNode
+                }
+                curr.next = newNode
+
+                return true
+            }
+        }, this._closerTo(position))
+    }
+
+    embedManyAfterPosition(position: number, data: NonEmptyArray<T>): void {
+        if (this.size === 0 || position >= this.size) return 
+
+        if (this.size === 1 || position === this.size - 1) {
+            this.appendMany(data)
+
+            return 
+        }
+
+        this.size += data.length
+        const { chainHead, chainTail } = NodeDouble.createChain(data)
+        
+        this.some((curr, n) => {
+            if (n === position) {
+                chainTail.next = curr.next
+                if (curr.next?.prev) {
+                    curr.next.prev = chainTail
+                }
+                curr.next = chainHead
+
+                return true
+            }
+        }, this._closerTo(position))
     }
 
     prependOne(data: T): void {
@@ -252,6 +310,15 @@ export class LinkedListDouble<T> extends BaseLinkedList<T> implements LinkedList
 
     toJSON(): string {
         return JSON.stringify(this.head)
+    }
+
+    from(data: NonEmptyArray<T>): void {
+        const { chainHead, chainTail } = NodeDouble.createChain(data)
+
+        this.size = data.length
+
+        this.head = chainHead
+        this.tail = chainTail
     }
 
     clear(): void {

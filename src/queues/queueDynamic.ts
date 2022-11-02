@@ -29,7 +29,13 @@ export class QueueDynamic<T> extends Storage<T> implements QueueDynamicOperation
     }
 
     toArray(): T[] {
-        return this.storage
+        const dataArr = new Array(this.size)
+
+        for (let i = 0; i < this.size; i++) {
+            dataArr[i] = this.storage[i]
+        }
+
+        return dataArr
     }
 
     toJSON(): string {

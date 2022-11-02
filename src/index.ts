@@ -1,17 +1,16 @@
-import { LinkedListSingle, LinkedListSingleCircular } from "./linkedLists"
-
+import { BinaryTree } from "./binaryTrees"
 
 export const app = () => {
-    const l1 = new LinkedListSingle<number>()
 
-    l1.appendOne(1)
-    l1.appendOne(2)
-    l1.appendOne(3)
+    const bt1 = new BinaryTree<number>()
 
+    bt1.insertOne(2)
+    bt1.insertOne(2)
+    bt1.insertOne(1)
+    bt1.insertOne(1)
+    // bt1.insertMany([1,2,3,4,5,6,7])
 
-    l1.removeTail()
-
-    console.log(l1.toArray())
+    bt1.traversePreOrder(node => console.log(node.data))
 }
 
 app()

@@ -48,7 +48,13 @@ export class QueueFixed<T> implements QueueFixedOperation<T> {
     }
 
     toArray(): (T | undefined)[] {
-        return this._storage
+        const dataArr = new Array(this.size)
+
+        for (let i = 0; i < this.size; i++) {
+            dataArr[i] = this._storage[i]
+        }
+
+        return dataArr
     }
 
     toJSON(): string {

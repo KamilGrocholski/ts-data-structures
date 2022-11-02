@@ -3,6 +3,8 @@ interface StackDynamicOperations<T> {
     pop(): T | undefined
     peek(): T | undefined
     isEmpty(): boolean
+    from(data: T[]): void 
+    toArray(): T[]
     clear(): void
 }
 
@@ -31,6 +33,15 @@ export class StackDynamic<T> implements StackDynamicOperations<T> {
 
     isEmpty(): boolean {
         return this.size === 0
+    }
+
+    from(data: T[]) {
+        this._storage = data
+        this.size = data.length
+    }
+
+    toArray(): T[] {
+        return this._storage
     }
 
     clear(): void {

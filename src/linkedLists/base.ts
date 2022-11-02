@@ -11,6 +11,7 @@ export interface Config<T> {
     comparator?: Comparator<T>
 }
 
+
 export type Pointer = 'NEXT' | 'PREV'
 export type Edge = 'HEAD' | 'TAIL'
 export type FoundNodeSingle<T> = { node: NodeSingle<T>, position: number }
