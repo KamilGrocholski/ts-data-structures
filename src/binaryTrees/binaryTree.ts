@@ -1,160 +1,162 @@
-import { NonEmptyArray } from "../utils/types"
 import { BaseBinaryTree, Config, NodeBinaryTree } from "./base"
 
 interface BinaryTreeOperations<T> {
-    insertOne(data: T): NodeBinaryTree<T>
-    insertMany(data: NonEmptyArray<T>): NodeBinaryTree<T>[]
+    insert(data: T): NodeBinaryTree<T>
 
-    findOne(data: T, startNode: NodeBinaryTree<T> | null): NodeBinaryTree<T> | undefined
-    findMin(startNode: NodeBinaryTree<T> | null): NodeBinaryTree<T> | undefined
-    findMax(startNode: NodeBinaryTree<T> | null): NodeBinaryTree<T> | undefined 
-    //TODO
-    findParentOfNode(data: T, startNode: NodeBinaryTree<T> | null): NodeBinaryTree<T> | undefined 
+    find(data: T, root: NodeBinaryTree<T> | null): NodeBinaryTree<T> | undefined
+    findMin(root: NodeBinaryTree<T> | null): NodeBinaryTree<T> | undefined
+    findMax(root: NodeBinaryTree<T> | null): NodeBinaryTree<T> | undefined 
 
-    // remove(data: T)
+    remove(data: T, root: NodeBinaryTree<T> | null): void
     
-    some(callback: (node: NodeBinaryTree<T>) => boolean | void, startNode: NodeBinaryTree<T> | null): NodeBinaryTree<T> | undefined
-    traverseInOrder(callback: (node: NodeBinaryTree<T>) => void, startNode: NodeBinaryTree<T> | null): void
-    traversePreOrder(callback: (node: NodeBinaryTree<T>) => void, startNode: NodeBinaryTree<T> | null): void
-    traversePostOrder(callback: (node: NodeBinaryTree<T>) => void, startNode: NodeBinaryTree<T> | null): void
+    traverseInOrder(callback: (currentNode: NodeBinaryTree<T>) => void, root: NodeBinaryTree<T> | null): void
+    traversePreOrder(callback: (currentNode: NodeBinaryTree<T>) => void, root: NodeBinaryTree<T> | null): void
+    traversePostOrder(callback: (currentNode: NodeBinaryTree<T>) => void, root: NodeBinaryTree<T> | null): void
 
     isEmpty(): boolean 
 
     toJSON(): string
+
+    clear(): void
 }
 
 export class BinaryTree<T> extends BaseBinaryTree<T> implements BinaryTreeOperations<T> {
-    public root: NodeBinaryTree<T> | null = null
 
     constructor(config: Config<T> = {}) {
         super(config)
     }
 
-    //TODO
-    some(callback: (node: NodeBinaryTree<T>) => boolean | void, startNode: NodeBinaryTree<T> | null = this.root): NodeBinaryTree<T> | undefined {
-        if (!startNode) return 
-
-        
-    }
-
     /**
      * Left subtree > Root > Right subtree
-     * @param startNode
+     * @param root
      * @param callback 
      */
-    traverseInOrder(callback: (node: NodeBinaryTree<T>) => void, startNode: NodeBinaryTree<T> | null = this.root): void {
-        if (startNode != null) {
-            this.traverseInOrder(callback, startNode.left)
-            callback(startNode)
-            this.traverseInOrder(callback, startNode.right)
+    traverseInOrder(callback: (currentNode: NodeBinaryTree<T>) => void, root: NodeBinaryTree<T> | null = this.root): void {
+        if (root != null) {
+            this.traverseInOrder(callback, root.left)
+            callback(root)
+            this.traverseInOrder(callback, root.right)
         }
     }
 
     /**
      * Root > Left subtree > Right subtree
-     * @param startNode
+     * @param root
      * @param callback 
      */
-    traversePreOrder(callback: (node: NodeBinaryTree<T>) => void, startNode: NodeBinaryTree<T> | null = this.root): void {
-        if (startNode != null) {
-            callback(startNode)
-            this.traversePreOrder(callback, startNode.left)
-            this.traversePreOrder(callback, startNode.right)
+    traversePreOrder(callback: (currentNode: NodeBinaryTree<T>) => void, root: NodeBinaryTree<T> | null = this.root): void {
+        if (root != null) {
+            callback(root)
+            this.traversePreOrder(callback, root.left)
+            this.traversePreOrder(callback, root.right)
         }
     }
 
     /**
      * Left subtree > Right subtree > Root
-     * @param startNode
+     * @param root
      * @param callback 
      */
-    traversePostOrder(callback: (node: NodeBinaryTree<T>) => void, startNode: NodeBinaryTree<T> | null = this.root): void {
-        if (startNode != null) {
-            this.traversePostOrder(callback, startNode.left)
-            this.traversePostOrder(callback, startNode.right)
-            callback(startNode)
+    traversePostOrder(callback: (currentNode: NodeBinaryTree<T>) => void, root: NodeBinaryTree<T> | null = this.root): void {
+        if (root != null) {
+            this.traversePostOrder(callback, root.left)
+            this.traversePostOrder(callback, root.right)
+            callback(root)
         }
     }
 
-    insertOne(data: T): NodeBinaryTree<T> {
+    insert(data: T): NodeBinaryTree<T> {
         const newNode = NodeBinaryTree.createOne(data)
 
-        if (this.root != null) {
-            const traverse = (node: NodeBinaryTree<T>) => {
-                if (this.isBigger(data, node.data)) {
-                    if (node.right) {
-                        traverse(node.right)
-                    } else {
-                        node.right = newNode
-                    }
-                } else {
-                    if (node.left) {
-                        traverse(node.left)
-                    } else {
-                        node.left = newNode
-                    }
-                }
-            }
+        this.size++ 
 
-            traverse(this.root)
+        if (this.root === null) {
+            this.root = newNode
 
             return newNode
-        } 
+        }
 
-        this.root = newNode
+        const insertTraversal = (root: NodeBinaryTree<T>) => {
+            // Case 1
+            // It is smaller
+            if (this.compare(data, root.data) === 1) {
+                if (root.left) insertTraversal(root.left)
+                else root.left = newNode
+            }
+            // Case 2
+            // It is bigger or equal
+            else {
+                if (root.right) insertTraversal(root.right)
+                else root.right = newNode
+            }
+        }
+
+        insertTraversal(this.root)
 
         return newNode
     }
 
-    insertMany(data: NonEmptyArray<T>): NodeBinaryTree<T>[] {
-        const insertedNodes = new Array(data.length)
+    remove(data: T, root: NodeBinaryTree<T> | null = this.root) {
+        if (root) {
+            // recursively call the function until found
+            if (data > root.data) root.right = this.remove(data, root.right)
+            else if (data < root.data) root.left = this.remove(data, root.left)
+            else {
+                // Case 1
+                // no child
+                if (!root.left && !root.right) {
+                    this.size--
 
-        data.forEach((d, n) => {
-            insertedNodes[n] = this.insertOne(d)
-        })
+                    return null
+                }
+                // Case 2
+                // replace current root with it's child
+                if (!root.left || !root.right) {
+                    this.size--
 
-        return insertedNodes
+                    return root.left ? root.left : root.right
+                }
+                // Case 3
+                // find max node and recursively call until deleted
+                else {
+                    this.size--
+                    let temp = root.left
+                    while (temp.right) temp = temp.right
+                    root.data = temp.data
+                    root.left = this.remove(temp.data, temp.left)
+                }
+            }
+        }
+
+        return root
     }
 
-    findOne(data: T, startNode: NodeBinaryTree<T> | null = this.root): NodeBinaryTree<T> | undefined {
-        if (!startNode) return undefined
+    find(data: T, root: NodeBinaryTree<T> | null = this.root): NodeBinaryTree<T> | undefined {
+        if (!root) return undefined
 
-        if (this.isEqual(data, startNode.data)) {
+        if (this.compare(data, root.data) === 0) {
 
-          return startNode
+          return root
         } else {
-          if (this.isBigger(data, startNode.data)) return this.findOne(data, startNode.right)
-          else return this.findOne(data, startNode.right)
+          if (this.compare(data, root.data) === -1) return this.find(data, root.right)
+          else return this.find(data, root.left)
         }
     }
 
-    findMin(startNode: NodeBinaryTree<T> | null = this.root): NodeBinaryTree<T> | undefined {
-        if (!startNode) return
+    findMin(root: NodeBinaryTree<T> | null = this.root): NodeBinaryTree<T> | undefined {
+        if (!root) return
 
-        if (startNode.left) return this.findMin(startNode.left)
-        else return startNode
+        if (root.left) return this.findMin(root.left)
+
+        else return root
     }
 
-    findMax(startNode: NodeBinaryTree<T> | null): NodeBinaryTree<T> | undefined {
-        if (!startNode) return
+    findMax(root: NodeBinaryTree<T> | null = this.root): NodeBinaryTree<T> | undefined {
+        if (!root) return
 
-        if (startNode.right) return this.findMax(startNode.right)
-        else return startNode
-    }
+        if (root.right) return this.findMax(root.right)
 
-    //TODO
-    findParentOfNode(data: T, startNode: NodeBinaryTree<T> | null = this.root): NodeBinaryTree<T> | undefined {
-        if (!startNode) return 
-
-        let parent = startNode
-
-        if (this.isEqual(data, startNode.data)) {
-
-            return startNode
-        } else {
-            if (this.isBigger(data, startNode.data)) return this.findOne(data, startNode.right)
-            else return this.findOne(data, startNode.right)
-        }
+        else return root
     }
 
     isEmpty(): boolean {
@@ -163,5 +165,10 @@ export class BinaryTree<T> extends BaseBinaryTree<T> implements BinaryTreeOperat
 
     toJSON(): string {
         return JSON.stringify(this.root)
+    }
+
+    clear(): void {
+        this.root = null
+        this.size = 0
     }
 }

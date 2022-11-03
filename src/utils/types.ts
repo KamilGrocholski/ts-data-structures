@@ -1,3 +1,3 @@
-export type Comparator<T> = (d1: T, d2: T) => boolean
+export type Comparator<T> = (a: T, b: T) => -1 | 1 | 0 
 
 export type NonEmptyArray<T> = [T, ...T[]]
