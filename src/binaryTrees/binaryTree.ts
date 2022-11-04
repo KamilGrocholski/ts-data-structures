@@ -1,13 +1,17 @@
+/* eslint-disable @typescript-eslint/ban-types */
 import { BaseBinaryTree, Config, NodeBinaryTree } from "./base"
 
 interface BinaryTreeOperations<T> {
     insert(data: T): NodeBinaryTree<T>
+    insertMany(data: T[]): void
 
     find(data: T, root: NodeBinaryTree<T> | null): NodeBinaryTree<T> | undefined
     findMin(root: NodeBinaryTree<T> | null): NodeBinaryTree<T> | undefined
     findMax(root: NodeBinaryTree<T> | null): NodeBinaryTree<T> | undefined 
+    findParent(node: NodeBinaryTree<T>, root: NodeBinaryTree<T> | null): NodeBinaryTree<T> | undefined
 
     remove(data: T, root: NodeBinaryTree<T> | null): void
+    // removeGiven(node: NodeBinaryTree<T> | null)
     
     traverseInOrder(callback: (currentNode: NodeBinaryTree<T>) => void, root: NodeBinaryTree<T> | null): void
     traversePreOrder(callback: (currentNode: NodeBinaryTree<T>) => void, root: NodeBinaryTree<T> | null): void
@@ -16,6 +20,7 @@ interface BinaryTreeOperations<T> {
     isEmpty(): boolean 
 
     toJSON(): string
+    toArray(): T[]
 
     clear(): void
 }
@@ -96,6 +101,10 @@ export class BinaryTree<T> extends BaseBinaryTree<T> implements BinaryTreeOperat
         return newNode
     }
 
+    insertMany(data: T[]): void {
+        data.forEach(d => this.insert(d))
+    }
+
     remove(data: T, root: NodeBinaryTree<T> | null = this.root) {
         if (root) {
             // recursively call the function until found
@@ -159,12 +168,52 @@ export class BinaryTree<T> extends BaseBinaryTree<T> implements BinaryTreeOperat
         else return root
     }
 
+    findParent(node: NodeBinaryTree<T>, root: NodeBinaryTree<T> | null = this.root): NodeBinaryTree<T> | undefined {
+        if (!root) return 
+        if (node === root) return 
+        if (node === root.left) return root
+        if (node === root.right) return root
+        if (this.compare(node.data, root.data) === -1 || 0) return this.findParent(node, root.left)
+        return this.findParent(node, root.right)
+    }
+
+    isValid(root: NodeBinaryTree<T> | null = this.root): boolean {
+        if (!root) return true
+
+        if (root.left && root.right) return this.isValid(root.left) && this.isValid(root.right)
+
+        if (root.left) {
+            if (this.compare(root.data, root.left.data) === 1) return false
+            return this.isValid(root.left)
+        }
+
+        if (root.right) {
+            if (this.compare(root.data, root.right.data) === -1 || 0) return false
+            return this.isValid(root.right)
+        }
+
+        return true
+    }
+
     isEmpty(): boolean {
         return this.root === null
     }
 
     toJSON(): string {
         return JSON.stringify(this.root)
+    }
+
+    toArray(): T[] {
+        const arrData = new Array(this.size)
+
+        let n = 0
+
+        this.traverseInOrder(node => {
+            arrData[n] = node.data
+            n++
+        })
+
+        return arrData
     }
 
     clear(): void {

@@ -1,4 +1,5 @@
 import { DEFAULT_COMPARATOR } from "../utils/comparators"
+import { CONSOLE_POINTERS } from "../utils/constants"
 import { Comparator } from "../utils/types"
 
 export interface Config<T> {
@@ -14,10 +15,19 @@ export interface Config<T> {
 }
 
 interface BaseBinaryTreeOperations<T> {
+    // tree type checkers
     isFull(root: NodeBinaryTree<T> | null): boolean
     isPerfect(root: NodeBinaryTree<T> | null): boolean 
     isComplete(root: NodeBinaryTree<T> | null): boolean
+    isDegenerate(root: NodeBinaryTree<T> | null): boolean
+    isBalanced(root: NodeBinaryTree<T> | null): boolean
+    isSkewedLeft(root: NodeBinaryTree<T> | null): boolean
+    isSkewedRight(root: NodeBinaryTree<T> | null): boolean
+
     getHeight(root: NodeBinaryTree<T> | null): number
+
+    // prettier
+    toPretty(): string
 }
 
 export class NodeBinaryTree<T> {
@@ -63,6 +73,42 @@ export class BaseBinaryTree<T> implements BaseBinaryTreeOperations<T> {
         return this._isCompleteRec(root, 0)
     }
     
+    isDegenerate(root: NodeBinaryTree<T> | null = this.root): boolean {
+        if (!root) return true
+
+        if (root.left && root.right) return false
+
+        if (!root.left || !root.right) return true
+
+        return !this.isDegenerate(root.left) || !this.isDegenerate(root.right)
+    }
+
+    isBalanced(root: NodeBinaryTree<T> | null = this.root): boolean {
+        if (!root) return true
+
+        if ((root.left?.left || root.left?.right) && !root.right) return false
+        
+        if ((root.right?.left || root.right?.right) && !root.left) return false
+
+        return this.isBalanced(root.left) && this.isBalanced(root.right)
+    }
+
+    isSkewedLeft(root: NodeBinaryTree<T> | null = this.root): boolean {
+        if (!root) return true
+
+        if (!root.left && root.right) return false
+
+        return this.isSkewedLeft(root.left) && this.isSkewedLeft(root.right)
+    }
+
+    isSkewedRight(root: NodeBinaryTree<T> | null = this.root): boolean {
+        if (!root) return true
+
+        if (root.left && !root.right) return false
+
+        return this.isSkewedRight(root.left) && this.isSkewedRight(root.right)
+    }
+
     getHeight(root: NodeBinaryTree<T> | null = this.root): number {
         if (!root) return 0
 
@@ -70,6 +116,10 @@ export class BaseBinaryTree<T> implements BaseBinaryTreeOperations<T> {
         const rightHeight = this.getHeight(root.right)
 
         return Math.max(leftHeight, rightHeight) + 1
+    }
+
+    toPretty(root: NodeBinaryTree<T> | null = this.root): string {
+        return this._prettyPreOrder(root)
     }
 
     private _isPerfectRec(root: NodeBinaryTree<T> | null, height: number, level = 0): boolean {
@@ -88,5 +138,50 @@ export class BaseBinaryTree<T> implements BaseBinaryTreeOperations<T> {
         if (index >= this.size) return false
 
         return this._isCompleteRec(root.left, 2 * index + 1) && this._isCompleteRec(root.right, 2 * index + 2)  
+    }
+
+    // zerżnięte z https://www.baeldung.com/java-print-binary-tree-diagram
+    private _prettyPreOrder(root: NodeBinaryTree<T> | null = this.root) {
+        if (root == null) return ""
+    
+        const { TWO_CHILDREN, LAST_CHILDREN } = CONSOLE_POINTERS
+
+        const sb = {
+            output: ''
+        }
+        sb.output += root.data
+    
+        const pointerRight = LAST_CHILDREN
+        const pointerLeft = root.right != null ? TWO_CHILDREN : LAST_CHILDREN
+    
+        this._prettyPreOrderHelper(sb, "", pointerLeft, root.left, root.right != null)
+        this._prettyPreOrderHelper(sb, "", pointerRight, root.right, false)
+    
+        return sb.output
+    }
+
+    private _prettyPreOrderHelper(sb: { output: string }, padding: string, pointer: string, node: NodeBinaryTree<T> | null, hasRightSibling: boolean) {
+        if (node) {
+            const { VERITICAL, TWO_CHILDREN, LAST_CHILDREN } = CONSOLE_POINTERS
+
+            sb.output += "\n"
+            sb.output += padding
+            sb.output += pointer
+            sb.output += node.data
+      
+            let paddingBuilder = padding
+            if (hasRightSibling) {
+                paddingBuilder += VERITICAL + '  '
+            } else {
+                paddingBuilder += "   "
+            }
+      
+            const paddingForBoth = paddingBuilder
+            const pointerRight = LAST_CHILDREN
+            const pointerLeft = node.right != null ? TWO_CHILDREN : LAST_CHILDREN
+      
+            this._prettyPreOrderHelper(sb, paddingForBoth, pointerLeft, node.left, node.right != null)
+            this._prettyPreOrderHelper(sb, paddingForBoth, pointerRight, node.right, false)
+        }
     }
 }
