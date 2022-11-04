@@ -11,13 +11,13 @@ interface BinaryTreeOperations<T> {
     findParent(node: NodeBinaryTree<T>, root: NodeBinaryTree<T> | null): NodeBinaryTree<T> | undefined
 
     remove(data: T, root: NodeBinaryTree<T> | null): void
-    // removeGiven(node: NodeBinaryTree<T> | null)
+    removeGiven(node: NodeBinaryTree<T>): void
     
     traverseInOrder(callback: (currentNode: NodeBinaryTree<T>) => void, root: NodeBinaryTree<T> | null): void
     traversePreOrder(callback: (currentNode: NodeBinaryTree<T>) => void, root: NodeBinaryTree<T> | null): void
     traversePostOrder(callback: (currentNode: NodeBinaryTree<T>) => void, root: NodeBinaryTree<T> | null): void
 
-    isEmpty(): boolean 
+    hasDuplicates(root: NodeBinaryTree<T> | null): boolean
 
     toJSON(): string
     toArray(): T[]
@@ -32,7 +32,7 @@ export class BinaryTree<T> extends BaseBinaryTree<T> implements BinaryTreeOperat
     }
 
     /**
-     * Left subtree > Root > Right subtree
+     * Left subtree -> Root -> Right subtree
      * @param root
      * @param callback 
      */
@@ -45,7 +45,7 @@ export class BinaryTree<T> extends BaseBinaryTree<T> implements BinaryTreeOperat
     }
 
     /**
-     * Root > Left subtree > Right subtree
+     * Root -> Left subtree -> Right subtree
      * @param root
      * @param callback 
      */
@@ -58,7 +58,7 @@ export class BinaryTree<T> extends BaseBinaryTree<T> implements BinaryTreeOperat
     }
 
     /**
-     * Left subtree > Right subtree > Root
+     * Left subtree -> Right subtree -> Root
      * @param root
      * @param callback 
      */
@@ -105,11 +105,12 @@ export class BinaryTree<T> extends BaseBinaryTree<T> implements BinaryTreeOperat
         data.forEach(d => this.insert(d))
     }
 
-    remove(data: T, root: NodeBinaryTree<T> | null = this.root) {
+    remove(data: T, root: NodeBinaryTree<T> | null = this.root): NodeBinaryTree<T> | null {
         if (root) {
             // recursively call the function until found
-            if (data > root.data) root.right = this.remove(data, root.right)
-            else if (data < root.data) root.left = this.remove(data, root.left)
+            const comparison = this.compare(data, root.data)
+            if (comparison === -1) root.right = this.remove(data, root.right)
+            else if (comparison === 1) root.left = this.remove(data, root.left)
             else {
                 // Case 1
                 // no child
@@ -140,6 +141,12 @@ export class BinaryTree<T> extends BaseBinaryTree<T> implements BinaryTreeOperat
         return root
     }
 
+    removeGiven(node: NodeBinaryTree<T>): void {
+        const foundParent = this.findParent(node)
+
+        this.remove(node.data, foundParent)
+    }
+    
     find(data: T, root: NodeBinaryTree<T> | null = this.root): NodeBinaryTree<T> | undefined {
         if (!root) return undefined
 
@@ -195,8 +202,14 @@ export class BinaryTree<T> extends BaseBinaryTree<T> implements BinaryTreeOperat
         return true
     }
 
-    isEmpty(): boolean {
-        return this.root === null
+    hasDuplicates(root: NodeBinaryTree<T> | null = this.root): boolean {
+        if (!root) return false
+
+        const arrData = this.toArray()
+
+        if (new Set(arrData).size !== arrData.length) return true
+
+        return false
     }
 
     toJSON(): string {

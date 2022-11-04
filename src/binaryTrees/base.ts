@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-types */
 import { DEFAULT_COMPARATOR } from "../utils/comparators"
 import { CONSOLE_POINTERS } from "../utils/constants"
 import { Comparator } from "../utils/types"
@@ -26,8 +27,10 @@ interface BaseBinaryTreeOperations<T> {
 
     getHeight(root: NodeBinaryTree<T> | null): number
 
+    isEmpty(): boolean 
+
     // prettier
-    toPretty(): string
+    toPretty(type: 1 | 2, root: NodeBinaryTree<T> | null): string | undefined
 }
 
 export class NodeBinaryTree<T> {
@@ -47,6 +50,14 @@ export class NodeBinaryTree<T> {
 export class BaseBinaryTree<T> implements BaseBinaryTreeOperations<T> {
     public root: NodeBinaryTree<T> | null = null
     public size = 0
+    /**
+     * (a > b) => -1;
+     * (a < b) => 1;
+     * (a === b) => 0; 
+     * @param a
+     * @param b 
+     * @returns `-1 | 1 | 0`
+     */
     public compare: Comparator<T>
 
     constructor(config: Config<T>) {
@@ -118,9 +129,30 @@ export class BaseBinaryTree<T> implements BaseBinaryTreeOperations<T> {
         return Math.max(leftHeight, rightHeight) + 1
     }
 
-    toPretty(root: NodeBinaryTree<T> | null = this.root): string {
-        return this._prettyPreOrder(root)
+    isEmpty(): boolean {
+        return this.root === null
     }
+
+    toPretty(type: 1 | 2 = 1, root: NodeBinaryTree<T> | null = this.root): string | undefined {
+        if (type === 1) return this._toPretty1Helper('', true, { out: '' })?.out
+        if (type === 2) return this._prettyPreOrder(root)
+    }
+
+    private _toPretty1Helper(prefix: string, isTail: boolean, sb: { out: string }, root: NodeBinaryTree<T> | null = this.root) {
+        if (!root) return
+
+        if (root.right) {
+            const sbPre = prefix + (isTail ? "│   " : "    ")
+            this._toPretty1Helper(sbPre, false, sb, root.right)
+        }
+        sb.out += prefix + (isTail ? "└── " : "┌── ") + root.data + '\n'
+        if (root.left) {
+            const sbPre = prefix + (isTail ? "    " : "│   ")
+            this._toPretty1Helper(sbPre, true, sb, root.left)
+        }
+
+        return sb
+    }   
 
     private _isPerfectRec(root: NodeBinaryTree<T> | null, height: number, level = 0): boolean {
         if (!root) return false
@@ -185,3 +217,4 @@ export class BaseBinaryTree<T> implements BaseBinaryTreeOperations<T> {
         }
     }
 }
+

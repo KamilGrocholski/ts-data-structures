@@ -4,10 +4,11 @@ export const app = () => {
 
     const bt1 = new BinaryTree<number>()
 
-    bt1.insertMany([5,2,4,3]) 
-    const f = bt1.find(3)
-    if (f)
-    console.log(bt1.findParent(f))
+    bt1.insertMany([4,3,7,3,8,1,9,10]) 
+
+    console.log(bt1.hasDuplicates())
+
+    console.log(bt1.toPretty())
 
     // console.log(bt1.size)
     // console.log(bt1.getHeight())
