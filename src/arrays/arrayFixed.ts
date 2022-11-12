@@ -121,7 +121,7 @@ export class ArrayFixed<T> implements ArrayFixedOperations<T> {
     }
 
     toJSON(): string {
-        return JSON.stringify(this.toArray())
+        return JSON.stringify(this._storage)
     }
 
     clear(): void {

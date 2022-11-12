@@ -57,10 +57,8 @@ export class StackFixed<T> implements StackFixedOperations<T> {
     toArray(): T[] {
         const dataArr = new Array(this.size)
 
-        let n = 0
         for (let i = 0; i < this.size; i++) {
-            dataArr[n] = this._storage[i]
-            n++
+            dataArr[i] = this._storage[i]
         }
 
         return dataArr
