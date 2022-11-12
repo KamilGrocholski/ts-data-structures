@@ -22,8 +22,8 @@ export class StackFixed<T> implements StackFixedOperations<T> {
 
     push(data: T): void {
         if (this.isFull()) return 
-        this.size++
         this._storage[this.size] = data
+        this.size++
     }
 
     pop(): T | undefined {
@@ -57,8 +57,10 @@ export class StackFixed<T> implements StackFixedOperations<T> {
     toArray(): T[] {
         const dataArr = new Array(this.size)
 
+        let n = 0
         for (let i = 0; i < this.size; i++) {
-            dataArr[i] = this._storage[i]
+            dataArr[n] = this._storage[i]
+            n++
         }
 
         return dataArr

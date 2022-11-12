@@ -1,15 +1,16 @@
 {
-  "name": "ts-data-structures",
+  "name": "my-ts-ds",
   "version": "1.0.0",
   "description": "",
   "main": "dist/index.js",
   "scripts": {
     "dev": "nodemon src/index.ts",
+    "build": "tsc",
     "lint": "eslint . --ext .ts"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/KamilGrocholski/ts-data-structures "
+    "url": "https://github.com/KamilGrocholski/ts-data-structures"
   },
   "keywords": [],
   "author": "",

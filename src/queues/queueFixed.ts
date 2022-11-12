@@ -22,15 +22,15 @@ export class QueueFixed<T> implements QueueFixedOperation<T> {
 
     enqueue(data: T): void {
         if (this.isFull()) return 
-        this.size++
         this._storage[this.size] = data    
+        this.size++
     }
 
     dequeue(): T | undefined {
         if (this.isEmpty()) return 
+        this.size--
         const dequeued = this._storage[this.size] 
         this._storage[this.size] = undefined
-        this.size--
 
         return dequeued
     }

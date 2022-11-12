@@ -23,19 +23,20 @@ export class BinarySearchTree<T> extends BaseBinaryTree<T> implements BinarySear
 
     insert(data: T): NodeBinaryTree<T> {
         const newNode = NodeBinaryTree.createOne(data)
-        this.size++
-
+        
         if (!this.root) return this.root = newNode
-
+        
         const insertRec = (data: T, root: NodeBinaryTree<T> | null = this.root): NodeBinaryTree<T> | null => {
             if (!root) return null
-
+            
             if (this.compare(data, root.data) === -1) {
                 if (root.right) return insertRec(data, root.right)
+                this.size++
                 return root.right = newNode
             }
             if (this.compare(data, root.data) === 1) {
                 if (root.left) return insertRec(data, root.left)
+                this.size++
                 return root.left = newNode
             }
 
