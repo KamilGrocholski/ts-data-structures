@@ -1,14 +1,24 @@
 interface ArrayFixedOperations<T> {
-    some(callback: (value: T | undefined, index: number, array: (T | undefined)[]) => boolean): number
     insertFree(value: T): void
     insertAt(index: number, value: T): void
+
+    // removeOne(value: T): number
+    // removeMany(value: T): number[]
     removeAt(index: number): T | undefined 
+
     at(index: number): T | undefined
+    // findOne(value: T): number
+    // findMany(value: T): number[]
+
+    some(callback: (value: T | undefined, index: number, array: (T | undefined)[]) => boolean): number
     forEach(callback: (value: T | undefined, index: number, array: (T | undefined)[]) => void): void
+
     getFree(): number[]
     getOccupied(): number[]
+
     toArray(): T[]
     toJSON(): string
+
     clear(): void
 }
 
@@ -42,13 +52,13 @@ export class ArrayFixed<T> implements ArrayFixedOperations<T> {
     }
 
     insertAt(index: number, value: T): void {
-        if (index >= this.capacity || index < 0) throw new Error('Out of boundry')
+        if (index >= this.capacity || index < 0) throw new Error('OUT OF BOUNDS')
         this._storage[index] = value
         this.size++
     }
     
     removeAt(index: number): T | undefined {
-        if (index >= this.capacity || index < 0) throw new Error('Out of boundry')
+        if (index >= this.capacity || index < 0) throw new Error('OUT OF BOUNDS')
         const val = this._storage[index]
         delete this._storage[index]
         this.size--
@@ -57,7 +67,7 @@ export class ArrayFixed<T> implements ArrayFixedOperations<T> {
     }
 
     at(index: number): T | undefined {
-        if (index >= this.capacity || index < 0) throw new Error('Out of boundry')
+        if (index >= this.capacity || index < 0) throw new Error('OUT OF BOUNDS')
         return this._storage[index]
     }
 
