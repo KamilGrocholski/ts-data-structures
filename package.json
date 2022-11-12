@@ -7,6 +7,10 @@
     "dev": "nodemon src/index.ts",
     "lint": "eslint . --ext .ts"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/KamilGrocholski/ts-data-structures "
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",
