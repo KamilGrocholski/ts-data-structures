@@ -12,62 +12,17 @@ interface BinaryTreeOperations<T> {
 
     remove(data: T, root: NodeBinaryTree<T> | null): void
     removeGiven(node: NodeBinaryTree<T>): void
-    
-    traverseInOrder(callback: (currentNode: NodeBinaryTree<T>) => void, root: NodeBinaryTree<T> | null): void
-    traversePreOrder(callback: (currentNode: NodeBinaryTree<T>) => void, root: NodeBinaryTree<T> | null): void
-    traversePostOrder(callback: (currentNode: NodeBinaryTree<T>) => void, root: NodeBinaryTree<T> | null): void
 
     hasDuplicates(root: NodeBinaryTree<T> | null): boolean
-
-    toJSON(): string
-    toArray(): T[]
-
-    clear(): void
 }
 
+/**
+ * insert(data) -> data >= root.data ? -> root.right : -> root.left
+ */
 export class BinaryTree<T> extends BaseBinaryTree<T> implements BinaryTreeOperations<T> {
 
     constructor(config: Config<T> = {}) {
         super(config)
-    }
-
-    /**
-     * Left subtree -> Root -> Right subtree
-     * @param root
-     * @param callback 
-     */
-    traverseInOrder(callback: (currentNode: NodeBinaryTree<T>) => void, root: NodeBinaryTree<T> | null = this.root): void {
-        if (root != null) {
-            this.traverseInOrder(callback, root.left)
-            callback(root)
-            this.traverseInOrder(callback, root.right)
-        }
-    }
-
-    /**
-     * Root -> Left subtree -> Right subtree
-     * @param root
-     * @param callback 
-     */
-    traversePreOrder(callback: (currentNode: NodeBinaryTree<T>) => void, root: NodeBinaryTree<T> | null = this.root): void {
-        if (root != null) {
-            callback(root)
-            this.traversePreOrder(callback, root.left)
-            this.traversePreOrder(callback, root.right)
-        }
-    }
-
-    /**
-     * Left subtree -> Right subtree -> Root
-     * @param root
-     * @param callback 
-     */
-    traversePostOrder(callback: (currentNode: NodeBinaryTree<T>) => void, root: NodeBinaryTree<T> | null = this.root): void {
-        if (root != null) {
-            this.traversePostOrder(callback, root.left)
-            this.traversePostOrder(callback, root.right)
-            callback(root)
-        }
     }
 
     insert(data: T): NodeBinaryTree<T> {
@@ -127,7 +82,7 @@ export class BinaryTree<T> extends BaseBinaryTree<T> implements BinaryTreeOperat
                     return root.left ? root.left : root.right
                 }
                 // Case 3
-                // find max node and recursively call until deleted
+                // find max node on the left side, and recursively call until deleted
                 else {
                     this.size--
                     let temp = root.left
@@ -210,27 +165,5 @@ export class BinaryTree<T> extends BaseBinaryTree<T> implements BinaryTreeOperat
         if (new Set(arrData).size !== arrData.length) return true
 
         return false
-    }
-
-    toJSON(): string {
-        return JSON.stringify(this.root)
-    }
-
-    toArray(): T[] {
-        const arrData = new Array(this.size)
-
-        let n = 0
-
-        this.traverseInOrder(node => {
-            arrData[n] = node.data
-            n++
-        })
-
-        return arrData
-    }
-
-    clear(): void {
-        this.root = null
-        this.size = 0
     }
 }

@@ -1,4 +1,5 @@
-import { NonEmptyArray, Comparator} from "../utils/types";
+import { DEFAULT_COMPARATOR_EQUALITY } from "../utils/comparators";
+import { NonEmptyArray, ComparatorEquality } from "../utils/types";
 
 export interface Config<T> {
     /**
@@ -8,7 +9,7 @@ export interface Config<T> {
      * @param data2 `T`
      * @returns `boolean`
      */
-    comparator?: Comparator<T>
+    comparator?: ComparatorEquality<T>
 }
 
 
@@ -87,8 +88,8 @@ export class NodeDouble<T> {
 
 export abstract class BaseLinkedList<T> {
     public size = 0
-    private _defaultComparator: Comparator<T> = (d1: T, d2: T) => d1 === d2
-    public compare: Comparator<T>
+    private _defaultComparator: ComparatorEquality<T> = DEFAULT_COMPARATOR_EQUALITY
+    public compare: ComparatorEquality<T>
 
     constructor(config: Config<T>) {
         this.compare = config.comparator ?? this._defaultComparator

@@ -25,12 +25,20 @@ interface BaseBinaryTreeOperations<T> {
     isSkewedLeft(root: NodeBinaryTree<T> | null): boolean
     isSkewedRight(root: NodeBinaryTree<T> | null): boolean
 
+    traverseInOrder(callback: (currentNode: NodeBinaryTree<T>) => void, root: NodeBinaryTree<T> | null): void
+    traversePreOrder(callback: (currentNode: NodeBinaryTree<T>) => void, root: NodeBinaryTree<T> | null): void
+    traversePostOrder(callback: (currentNode: NodeBinaryTree<T>) => void, root: NodeBinaryTree<T> | null): void
+
     getHeight(root: NodeBinaryTree<T> | null): number
 
     isEmpty(): boolean 
 
     // prettier
     toPretty(type: 1 | 2, root: NodeBinaryTree<T> | null): string | undefined
+    toJSON(): string
+    toArray(): T[]
+
+    clear(): void
 }
 
 export class NodeBinaryTree<T> {
@@ -63,6 +71,45 @@ export class BaseBinaryTree<T> implements BaseBinaryTreeOperations<T> {
     constructor(config: Config<T>) {
         this.compare = config.comparator ?? DEFAULT_COMPARATOR
     }
+
+    /**
+     * Left subtree -> Root -> Right subtree
+     * @param root
+     * @param callback 
+     */
+     traverseInOrder(callback: (currentNode: NodeBinaryTree<T>) => void, root: NodeBinaryTree<T> | null = this.root): void {
+        if (root != null) {
+            this.traverseInOrder(callback, root.left)
+            callback(root)
+            this.traverseInOrder(callback, root.right)
+        }
+    }
+
+    /**
+     * Root -> Left subtree -> Right subtree
+     * @param root
+     * @param callback 
+     */
+    traversePreOrder(callback: (currentNode: NodeBinaryTree<T>) => void, root: NodeBinaryTree<T> | null = this.root): void {
+        if (root != null) {
+            callback(root)
+            this.traversePreOrder(callback, root.left)
+            this.traversePreOrder(callback, root.right)
+        }
+    }
+
+    /**
+     * Left subtree -> Right subtree -> Root
+     * @param root
+     * @param callback 
+     */
+    traversePostOrder(callback: (currentNode: NodeBinaryTree<T>) => void, root: NodeBinaryTree<T> | null = this.root): void {
+        if (root != null) {
+            this.traversePostOrder(callback, root.left)
+            this.traversePostOrder(callback, root.right)
+            callback(root)
+        }
+    }    
 
     isFull(root: NodeBinaryTree<T> | null = this.root): boolean {
         if (!root) return false 
@@ -136,6 +183,28 @@ export class BaseBinaryTree<T> implements BaseBinaryTreeOperations<T> {
     toPretty(type: 1 | 2 = 1, root: NodeBinaryTree<T> | null = this.root): string | undefined {
         if (type === 1) return this._toPretty1Helper('', true, { out: '' })?.out
         if (type === 2) return this._prettyPreOrder(root)
+    }
+
+    toJSON(): string {
+        return JSON.stringify(this.root)
+    }
+
+    toArray(): T[] {
+        const arrData = new Array(this.size)
+
+        let n = 0
+
+        this.traverseInOrder(node => {
+            arrData[n] = node.data
+            n++
+        })
+
+        return arrData
+    }
+
+    clear(): void {
+        this.root = null
+        this.size = 0
     }
 
     private _toPretty1Helper(prefix: string, isTail: boolean, sb: { out: string }, root: NodeBinaryTree<T> | null = this.root) {
