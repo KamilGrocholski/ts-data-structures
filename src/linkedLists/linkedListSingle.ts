@@ -25,6 +25,9 @@ interface LinkedListSingleOperations<T> {
     updateOne(data: T, newData: T): number | undefined
     updateMany(data: T, newData: T): number[]
 
+    reverse(): void
+    swap(nodeA: NodeSingle<T>, nodeB: NodeSingle<T>): void
+
     some(callback: (currentNode: NodeSingle<T>, currentPosition: number) => boolean | void): FoundNodeSingle<T> | undefined
     forEach(callback: (currentNode: NodeSingle<T>, currentPosition: number, previousNode: NodeSingle<T> | null) => void): void
 
@@ -42,6 +45,31 @@ export class LinkedListSingle<T> extends BaseLinkedList<T> implements LinkedList
 
     constructor(config: Config<T> = {}) {
         super(config)
+    }
+
+    reverse(): void {
+        if (!this.head) return 
+
+        let curr: null | NodeSingle<T> = this.head
+        let prev: null | NodeSingle<T> = null
+        let next: null | NodeSingle<T> = null
+
+        this.tail = this.head
+
+        while (curr != null) {
+            next = curr.next
+            curr.next = prev
+            prev = curr
+            curr = next    
+        }
+
+        this.head = prev
+    }
+
+    swap(nodeA: NodeSingle<T>, nodeB: NodeSingle<T>): void {
+        const temp = nodeA.data
+        nodeA.data = nodeB.data
+        nodeB.data = temp
     }
 
     some(callback: (currentNode: NodeSingle<T>, currentPosition: number, previousNode: NodeSingle<T> | null) => boolean | void): FoundNodeSingle<T> | undefined {

@@ -1,3 +1,4 @@
+import { inspect } from "util";
 import { NonEmptyArray } from "../utils/types";
 import { BaseLinkedList, Config, NodeDouble, FoundNodeDouble, Edge } from "./base";
 
@@ -7,8 +8,8 @@ interface LinkedListDoubleOperations<T> {
 
     embedAfterPosition(position: number, data: T): void
     embedManyAfterPosition(position: number, data: NonEmptyArray<T>): void
-    // embedAfterGiven(node: NodeDouble<T>, data: T): void
-    // embedManyAfterGiven(node: NodeDouble<T>, data: NonEmptyArray<T>): void
+    //TODO embedAfterGiven(node: NodeDouble<T>, data: T): void
+    //TODO embedManyAfterGiven(node: NodeDouble<T>, data: NonEmptyArray<T>): void
 
     prependOne(data: T): void
     prependMany(data: NonEmptyArray<T>): void
@@ -24,6 +25,9 @@ interface LinkedListDoubleOperations<T> {
 
     updateOne(data: T, newData: T, startFrom: Edge): number | undefined
     updateMany(data: T, newData: T): number[]
+
+    reverse(): void
+    swap(nodeA: NodeDouble<T>, nodeB: NodeDouble<T>): void
 
     some(callback: (currentNode: NodeDouble<T>, currentPosition: number) => boolean | void, startFrom: Edge): FoundNodeDouble<T> | undefined
     forEach(callback: (currentNode: NodeDouble<T>, currentPosition: number) => void): void
@@ -46,6 +50,32 @@ export class LinkedListDouble<T> extends BaseLinkedList<T> implements LinkedList
 
     private _closerTo(position: number): Edge {
         return position < (this.size / 2) ? 'HEAD' : 'TAIL'
+    }
+
+    reverse(): void {
+        if (!this.head) return 
+
+        this.tail = this.head
+        let curr: null | NodeDouble<T> = this.tail
+        let temp: null | NodeDouble<T> = null
+        
+        
+        while (curr != null) {
+            temp = curr.prev
+            curr.prev = curr.next
+            curr.next = temp
+            curr = curr.prev
+        }
+
+        if (temp != null) {
+            this.head = temp.prev
+        }
+    }
+
+    swap(nodeA: NodeDouble<T>, nodeB: NodeDouble<T>): void {
+        const temp = nodeA.data
+        nodeA.data = nodeB.data
+        nodeB.data = temp
     }
 
     some(callback: (currentNode: NodeDouble<T>, currentPosition: number) => boolean | void, startFrom: Edge = 'HEAD'): FoundNodeDouble<T> | undefined {
@@ -309,7 +339,8 @@ export class LinkedListDouble<T> extends BaseLinkedList<T> implements LinkedList
     }
 
     toJSON(): string {
-        return JSON.stringify(this.head)
+        // return JSON.stringify(this.head)
+        return inspect(this.head)
     }
 
     from(data: NonEmptyArray<T>): void {

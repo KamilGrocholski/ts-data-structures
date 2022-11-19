@@ -26,6 +26,9 @@ interface LinkedListSingleCircularOperations<T> {
     updateOne(data: T, newData: T): number | undefined 
     updateMany(data: T, newData: T): number[] | undefined
 
+    //TODO reverse(): void
+    swap(nodeA: NodeSingle<T>, nodeB: NodeSingle<T>): void
+
     some(callback: (currentNode: NodeSingle<T>, currentPosition: number, previousNode: NodeSingle<T> | null) => boolean | void): FoundNodeSingle<T> | undefined
     forEach(callback: (currentNode: NodeSingle<T>, currentPosition: number, previousNode: NodeSingle<T> | null) => void): void
 
@@ -43,6 +46,22 @@ export class LinkedListSingleCircular<T> extends BaseLinkedList<T> implements Li
 
     constructor(config: Config<T> = {}) {
         super(config)
+    }
+    
+    // reverse(): void {
+    //     if (!this.head) return
+
+    //     const reverseRec = (current: NodeSingle<T> | null) => {
+    //         if (current?.next !== this.head && current?.next?.next) {
+    //             current.next.next = current    
+    //         }
+    //     }
+    // }
+
+    swap(nodeA: NodeSingle<T>, nodeB: NodeSingle<T>): void {
+        const temp = nodeA.data
+        nodeA.data = nodeB.data
+        nodeB.data = temp
     }
 
     some(callback: (currentNode: NodeSingle<T>, currentPosition: number, previousNode: NodeSingle<T> | null) => boolean | void): FoundNodeSingle<T> | undefined {

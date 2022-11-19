@@ -1,11 +1,12 @@
 {
   "name": "my-ts-ds",
-  "version": "1.0.2",
+  "version": "1.0.5",
   "description": "4213123921382138b128b31238nv123cb12c3128321390213921398213v12312hshwevy12v3b28bx1y2x12u3921u3",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
     "dev": "nodemon src/index.ts",
+    "test": "nodemon test/index.ts",
     "build": "tsc",
     "lint": "eslint . --ext .ts"
   },
