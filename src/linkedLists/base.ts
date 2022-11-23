@@ -17,6 +17,7 @@ export type Pointer = 'NEXT' | 'PREV'
 export type Edge = 'HEAD' | 'TAIL'
 export type FoundNodeSingle<T> = { node: NodeSingle<T>, position: number }
 export type FoundNodeDouble<T> = { node: NodeDouble<T>, position: number }
+export type NullableNodeDouble<T> = NodeDouble<T> | null
 
 export class NodeSingle<T> {
     public data: T
@@ -88,10 +89,9 @@ export class NodeDouble<T> {
 
 export abstract class BaseLinkedList<T> {
     public size = 0
-    private _defaultComparator: ComparatorEquality<T> = DEFAULT_COMPARATOR_EQUALITY
     public compare: ComparatorEquality<T>
 
     constructor(config: Config<T>) {
-        this.compare = config.comparator ?? this._defaultComparator
+        this.compare = config.comparator ?? DEFAULT_COMPARATOR_EQUALITY
     }
 }

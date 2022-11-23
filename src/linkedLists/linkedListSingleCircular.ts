@@ -15,16 +15,17 @@ interface LinkedListSingleCircularOperations<T> {
     prependMany(data: NonEmptyArray<T>): void
 
     findOne(data: T): FoundNodeSingle<T> | undefined
-    findMany(data: T): FoundNodeSingle<T>[] | undefined
+    findMany(data: T): FoundNodeSingle<T>[]
     findAt(position: T): NodeSingle<T> | undefined
 
     removeHead(): T | undefined
     removeTail(): T | undefined
     removeGiven(node: NodeSingle<T>): number | undefined
     removeAt(position: number): T | undefined
+    removeDuplicates(): void
 
     updateOne(data: T, newData: T): number | undefined 
-    updateMany(data: T, newData: T): number[] | undefined
+    updateMany(data: T, newData: T): number[]
 
     //TODO reverse(): void
     swap(nodeA: NodeSingle<T>, nodeB: NodeSingle<T>): void
@@ -57,6 +58,13 @@ export class LinkedListSingleCircular<T> extends BaseLinkedList<T> implements Li
     //         }
     //     }
     // }
+
+    removeDuplicates(): void {
+        if (this.size < 2) return 
+
+        const unique = [...new Set(this.toArray())]
+        this.from(unique as NonEmptyArray<T>)
+    }
 
     swap(nodeA: NodeSingle<T>, nodeB: NodeSingle<T>): void {
         const temp = nodeA.data
@@ -237,7 +245,7 @@ export class LinkedListSingleCircular<T> extends BaseLinkedList<T> implements Li
         return this.some(curr => this.compare(curr.data, data))
     }
 
-    findMany(data: T): FoundNodeSingle<T>[] | undefined {
+    findMany(data: T): FoundNodeSingle<T>[] {
         const foundNodes: FoundNodeSingle<T>[] = []
 
         this.forEach((curr, n) => {
@@ -249,7 +257,7 @@ export class LinkedListSingleCircular<T> extends BaseLinkedList<T> implements Li
             }
         })
 
-        return foundNodes.length > 0 ? foundNodes : undefined
+        return foundNodes
     }
 
     findAt(position: T): NodeSingle<T> | undefined {
@@ -343,7 +351,7 @@ export class LinkedListSingleCircular<T> extends BaseLinkedList<T> implements Li
         return this.some(curr => this.compare(curr.data, newData))?.position
     }
 
-    updateMany(data: T, newData: T): number[] | undefined {
+    updateMany(data: T, newData: T): number[] {
         const updatedPositions: number[] = []
 
         this.forEach((curr, n) => {
@@ -353,7 +361,7 @@ export class LinkedListSingleCircular<T> extends BaseLinkedList<T> implements Li
             }
         })
 
-        return updatedPositions.length > 0 ? updatedPositions : undefined
+        return updatedPositions
     }
 
     toArray(): T[] {

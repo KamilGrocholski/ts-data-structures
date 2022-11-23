@@ -15,13 +15,14 @@ interface LinkedListDoubleOperations<T> {
     prependMany(data: NonEmptyArray<T>): void
 
     findOne(data: T, startFrom: Edge): FoundNodeDouble<T> | undefined
-    findMany(data: T): FoundNodeDouble<T>[] | undefined
+    findMany(data: T): FoundNodeDouble<T>[]
     findAt(position: number): NodeDouble<T> | undefined
 
     removeHead(): T | undefined
     removeTail(): T | undefined
     removeAt(position: number): T | undefined
     //TODO removeGiven(node: FoundNodeDouble<T>): void
+    removeDuplicates(): void
 
     updateOne(data: T, newData: T, startFrom: Edge): number | undefined
     updateMany(data: T, newData: T): number[]
@@ -50,6 +51,13 @@ export class LinkedListDouble<T> extends BaseLinkedList<T> implements LinkedList
 
     private _closerTo(position: number): Edge {
         return position < (this.size / 2) ? 'HEAD' : 'TAIL'
+    }
+
+    removeDuplicates(): void {
+        if (this.size < 2) return
+
+        const unique = [...new Set(this.toArray())]
+        this.from(unique as NonEmptyArray<T>)
     }
 
     reverse(): void {
@@ -311,7 +319,7 @@ export class LinkedListDouble<T> extends BaseLinkedList<T> implements LinkedList
         return this.some(curr => this.compare(curr.data, data), startFrom)
     }
     
-    findMany(data: T): FoundNodeDouble<T>[] | undefined {
+    findMany(data: T): FoundNodeDouble<T>[] {
         const foundNodes: FoundNodeDouble<T>[] = []
 
         this.forEach((curr, n) => {

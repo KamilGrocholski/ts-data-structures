@@ -4,3 +4,4 @@
 export * from './linkedListSingle'
 export * from './linkedListDouble'
 export * from './linkedListSingleCircular'
+export * from './linkedListDoubleCircular'

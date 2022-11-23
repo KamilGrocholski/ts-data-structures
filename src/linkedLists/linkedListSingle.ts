@@ -14,13 +14,14 @@ interface LinkedListSingleOperations<T> {
     prependMany(data: NonEmptyArray<T>): void
 
     findOne(data: T): FoundNodeSingle<T> | undefined
-    findMany(data: T): FoundNodeSingle<T>[] | undefined
+    findMany(data: T): FoundNodeSingle<T>[]
     findAt(position: number): NodeSingle<T> | undefined
 
     removeHead(): T | undefined
     removeTail(): T | undefined
     removeAt(position: number): T | undefined
     removeGiven(node: NodeSingle<T>): void
+    removeDuplicates(): void
 
     updateOne(data: T, newData: T): number | undefined
     updateMany(data: T, newData: T): number[]
@@ -45,6 +46,13 @@ export class LinkedListSingle<T> extends BaseLinkedList<T> implements LinkedList
 
     constructor(config: Config<T> = {}) {
         super(config)
+    }
+
+    removeDuplicates(): void {
+        if (this.size < 2) return 
+
+        const unique = [...new Set(this.toArray())]
+        this.from(unique as NonEmptyArray<T>)
     }
 
     reverse(): void {
@@ -245,7 +253,7 @@ export class LinkedListSingle<T> extends BaseLinkedList<T> implements LinkedList
         return this.some((node) => this.compare(node.data, data))
     }
 
-    findMany(data: T): FoundNodeSingle<T>[] | undefined {
+    findMany(data: T): FoundNodeSingle<T>[] {
         const foundNodes: FoundNodeSingle<T>[] = []
 
         this.forEach((curr, n) => {
@@ -257,7 +265,7 @@ export class LinkedListSingle<T> extends BaseLinkedList<T> implements LinkedList
             }
         })
 
-        return foundNodes.length > 0 ? foundNodes : undefined
+        return foundNodes
     }
 
     findAt(position: number): NodeSingle<T> | undefined {
